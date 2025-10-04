@@ -1,5 +1,5 @@
-﻿using System.Transactions;
-using TransactionManager.Api.DTOs;
+﻿using TransactionManager.Api.DTOs;
+using TransactionManager.Api.Entities;
 
 namespace TransactionManager.Api.Interfaces
 {
@@ -7,8 +7,8 @@ namespace TransactionManager.Api.Interfaces
     {
         IEnumerable<Transaction> GetTransactions();
 
-        Transaction GetTransaction(Guid id);
+        Transaction? GetTransaction(Guid id);
 
-        void AddTransaction(TransactionDTO transaction);
+        Transaction AddTransaction(TransactionDTO transaction);
     }
 }

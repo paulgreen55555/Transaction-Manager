@@ -9,6 +9,8 @@ namespace TransactionManager.Api.Controllers
         {
             var group = app.MapGroup("api/transactions");
 
+            const string GetTransactionEndpointName = "GetTransaction";
+
             group.MapGet("/", (ITransactionService transactionService) =>
             {
                 var result = transactionService.GetTransactions();
@@ -19,15 +21,23 @@ namespace TransactionManager.Api.Controllers
             group.MapGet("/{id}", (ITransactionService transactionService, Guid id) =>
             {
                 var result = transactionService.GetTransaction(id);
+                                
+                return result is not null ? Results.Ok(result) : Results.NotFound();
+            })
+            .WithName(GetTransactionEndpointName);
 
-                return Results.Ok(result);
-            });
-
-            group.MapPost("/", (ITransactionService transactionService, CreateTransactionDTO newTransaction) =>
+            group.MapPost("/", (ITransactionService transactionService, CreateTransactionDTO createdTransaction) =>
             {
-                var transaction = new TransactionDTO();
+                var transactionDTO = new TransactionDTO()
+                {
+                    Amount = createdTransaction.Amount,
+                    Description = createdTransaction.Description,
+                    TransactionDate = DateTime.Now,
+                };
 
-                transactionService.AddTransaction(transaction);
+                var newTransaction = transactionService.AddTransaction(transactionDTO);
+
+                return Results.CreatedAtRoute(GetTransactionEndpointName, new { id = newTransaction.Id }, newTransaction);
             });
 
             return group;
