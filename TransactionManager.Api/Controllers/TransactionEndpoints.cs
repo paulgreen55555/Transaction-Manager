@@ -11,22 +11,22 @@ namespace TransactionManager.Api.Controllers
 
             const string GetTransactionEndpointName = "GetTransaction";
 
-            group.MapGet("/", (ITransactionService transactionService) =>
+            group.MapGet("/", async (ITransactionService transactionService) =>
             {
-                var result = transactionService.GetTransactions();
+                var result = await transactionService.GetTransactionsAsync();
 
                 return Results.Ok(result);
             });
 
-            group.MapGet("/{id}", (ITransactionService transactionService, Guid id) =>
+            group.MapGet("/{id}", async (ITransactionService transactionService, Guid id) =>
             {
-                var result = transactionService.GetTransaction(id);
+                var result = await transactionService.GetTransactionAsync(id);
                                 
                 return result is not null ? Results.Ok(result) : Results.NotFound();
             })
             .WithName(GetTransactionEndpointName);
 
-            group.MapPost("/", (ITransactionService transactionService, CreateTransactionDTO createdTransaction) =>
+            group.MapPost("/", async (ITransactionService transactionService, CreateTransactionDTO createdTransaction) =>
             {
                 var transactionDTO = new TransactionDTO()
                 {
@@ -35,7 +35,7 @@ namespace TransactionManager.Api.Controllers
                     TransactionDate = DateTime.Now,
                 };
 
-                var newTransaction = transactionService.AddTransaction(transactionDTO);
+                var newTransaction = await transactionService.AddTransactionAsync(transactionDTO);
 
                 return Results.CreatedAtRoute(GetTransactionEndpointName, new { id = newTransaction.Id }, newTransaction);
             });

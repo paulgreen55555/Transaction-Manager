@@ -5,10 +5,10 @@ namespace TransactionManager.Api.Interfaces
 {
     public interface ITransactionService
     {
-        IEnumerable<Transaction> GetTransactions();
+        Task<IEnumerable<Transaction>> GetTransactionsAsync();
 
-        Transaction? GetTransaction(Guid id);
+        Task<Transaction?> GetTransactionAsync(Guid id);
 
-        Transaction AddTransaction(TransactionDTO transaction);
+        Task<Transaction> AddTransactionAsync(TransactionDTO transaction);
     }
 }

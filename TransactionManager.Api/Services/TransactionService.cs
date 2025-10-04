@@ -16,7 +16,7 @@ namespace TransactionManager.Api.Services
             _dbContext = dbContext;
         }
 
-        public Transaction AddTransaction(TransactionDTO transaction)
+        public async Task<Transaction> AddTransactionAsync(TransactionDTO transaction)
         {
             var newTransaction = new Transaction()
             {
@@ -26,24 +26,24 @@ namespace TransactionManager.Api.Services
                 TransactionDate = transaction.TransactionDate,
             };
 
-            _dbContext.Transactions.Add(newTransaction);
-            _dbContext.SaveChanges();
+            await _dbContext.Transactions.AddAsync(newTransaction);
+            await _dbContext.SaveChangesAsync();
 
             return newTransaction;
         }
 
-        public Transaction? GetTransaction(Guid id)
+        public async Task<Transaction?> GetTransactionAsync(Guid id)
         {
-            return _dbContext.Transactions
+            return await _dbContext.Transactions
                 .AsNoTracking()
-                .FirstOrDefault(t => t.Id == id);
+                .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-        public IEnumerable<Transaction> GetTransactions()
+        public async Task<IEnumerable<Transaction>> GetTransactionsAsync()
         {
-            return _dbContext.Transactions
+            return await _dbContext.Transactions
                 .AsNoTracking()
-                .ToList();
+                .ToListAsync();
         }
     }
 }
