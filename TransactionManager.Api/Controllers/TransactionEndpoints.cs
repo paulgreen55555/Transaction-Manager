@@ -1,4 +1,4 @@
-﻿using TransactionManager.Api.DTOs;
+﻿using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Interfaces;
 
 namespace TransactionManager.Api.Controllers
@@ -26,18 +26,25 @@ namespace TransactionManager.Api.Controllers
             })
             .WithName(GetTransactionEndpointName);
 
-            group.MapPost("/", async (ITransactionService transactionService, CreateTransactionDTO createdTransaction) =>
+            group.MapPost("/", async (ITransactionService transactionService, CreateTransactionDto createdTransaction) =>
             {
-                var transactionDTO = new TransactionDTO()
-                {
-                    Amount = createdTransaction.Amount,
-                    Description = createdTransaction.Description,
-                    TransactionDate = DateTime.Now,
-                };
-
-                var newTransaction = await transactionService.AddTransactionAsync(transactionDTO);
+                var newTransaction = await transactionService.AddTransactionAsync(createdTransaction);
 
                 return Results.CreatedAtRoute(GetTransactionEndpointName, new { id = newTransaction.Id }, newTransaction);
+            });
+
+            group.MapPut("/{id}", async (ITransactionService transactionService, Guid id, UpdateTransactionDto updatedTransaction) =>
+            {
+                await transactionService.UpdateTransactionAsync(id, updatedTransaction);
+
+                return Results.NoContent();
+            });
+
+            group.MapDelete("/{id}", async (ITransactionService transactionService, Guid id) =>
+            {
+                await transactionService.DeleteTransactionAsync(id);
+
+                return Results.NoContent();
             });
 
             return group;

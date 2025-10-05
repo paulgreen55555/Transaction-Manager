@@ -1,6 +1,6 @@
-﻿namespace TransactionManager.Api.DTOs
+﻿namespace TransactionManager.Api.Dtos
 {
-    public class CreateTransactionDTO
+    public class CreateTransactionDto
     {
         public string? Description { get; set; }
 
