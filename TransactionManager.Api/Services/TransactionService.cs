@@ -2,6 +2,7 @@
 using TransactionManager.Api.Data;
 using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Entities;
+using TransactionManager.Api.Exceptions;
 using TransactionManager.Api.Interfaces;
 using TransactionManager.Api.Mapping;
 
@@ -41,7 +42,7 @@ namespace TransactionManager.Api.Services
 
             if (transaction is null)
             {
-                throw new KeyNotFoundException($"Transaction with Id {id} not found");
+                throw new NotFoundException($"Transaction with Id {id} not found");
             }
 
             return transaction.ToDto();
@@ -62,7 +63,7 @@ namespace TransactionManager.Api.Services
 
             if (existingTransaction == null)
             {
-                throw new KeyNotFoundException($"Transaction with Id {id} not found");
+                throw new NotFoundException($"Transaction with Id {id} not found");
             }
 
             existingTransaction.Description = transactionDto.Description;

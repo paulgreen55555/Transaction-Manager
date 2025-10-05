@@ -1,9 +1,9 @@
-﻿namespace TransactionManager.Api.Dtos
-{
-    public class CreateTransactionDto
-    {
-        public string? Description { get; set; }
+﻿using System.ComponentModel.DataAnnotations;
 
-        public decimal Amount { get; set; }
-    }
+namespace TransactionManager.Api.Dtos
+{
+    public record CreateTransactionDto(
+        [MaxLength(50)] string? Description,
+        [Required][Range(0.01, int.MaxValue)] decimal Amount
+    );
 }

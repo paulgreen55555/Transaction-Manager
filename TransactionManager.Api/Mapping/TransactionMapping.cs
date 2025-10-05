@@ -18,13 +18,11 @@ namespace TransactionManager.Api.Mapping
 
         public static TransactionDto ToDto(this Transaction transaction)
         {
-            return new TransactionDto()
-            {
-                Id = transaction.Id,
-                Description = transaction.Description,
-                Amount = transaction.Amount,
-                TransactionDate = transaction.TransactionDate,
-            };
+            return new TransactionDto(transaction.Id,
+                transaction.Description,
+                transaction.Amount,
+                transaction.TransactionDate
+             );
         }
     }
 }

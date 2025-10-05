@@ -31,7 +31,8 @@ namespace TransactionManager.Api.Controllers
                 var newTransaction = await transactionService.AddTransactionAsync(createdTransaction);
 
                 return Results.CreatedAtRoute(GetTransactionEndpointName, new { id = newTransaction.Id }, newTransaction);
-            });
+            })
+            .WithParameterValidation();
 
             group.MapPut("/{id}", async (ITransactionService transactionService, Guid id, UpdateTransactionDto updatedTransaction) =>
             {
