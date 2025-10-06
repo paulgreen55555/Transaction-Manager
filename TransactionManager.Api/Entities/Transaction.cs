@@ -8,6 +8,6 @@
 
         public decimal Amount { get; set; }
 
-        public DateTime TransactionDate { get; set; }
+        public DateOnly TransactionDate { get; set; }
     }
 }

@@ -4,6 +4,6 @@
         Guid Id,
         string? Description,
         decimal Amount,
-        DateTime TransactionDate
+        DateOnly TransactionDate
     );
 }

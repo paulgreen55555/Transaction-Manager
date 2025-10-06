@@ -1,4 +1,5 @@
-﻿using TransactionManager.Api.Dtos;
+﻿using TransactionManager.Api.Converters;
+using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Entities;
 
 namespace TransactionManager.Api.Mapping
@@ -11,8 +12,17 @@ namespace TransactionManager.Api.Mapping
             {
                 Id = transaction.Id,
                 Description = transaction.Description,
-                Amount = transaction.Amount,
+                Amount = CurrencyConverter.RoundToCent(transaction.Amount),
                 TransactionDate = transaction.TransactionDate,
+            };
+        }
+
+        public static Transaction ToEntity(this CreateTransactionDto transaction)
+        {
+            return new Transaction()
+            {
+                Description = transaction.Description,
+                Amount = CurrencyConverter.RoundToCent(transaction.Amount),
             };
         }
 

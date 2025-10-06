@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TransactionManager.Api.Converters;
 using TransactionManager.Api.Data;
 using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Entities;
@@ -20,13 +21,10 @@ namespace TransactionManager.Api.Services
 
         public async Task<TransactionDto> AddTransactionAsync(CreateTransactionDto transaction)
         {
-            var newTransaction = new Transaction()
-            {
-                Id = Guid.NewGuid(),
-                Description = transaction.Description,
-                Amount = transaction.Amount,
-                TransactionDate = DateTime.Now,
-            };
+            Transaction newTransaction = transaction.ToEntity();
+
+            newTransaction.Id = Guid.NewGuid();
+            newTransaction.TransactionDate = DateOnly.FromDateTime(DateTime.Now);
 
             await _dbContext.Transactions.AddAsync(newTransaction);
             await _dbContext.SaveChangesAsync();
@@ -66,14 +64,22 @@ namespace TransactionManager.Api.Services
                 throw new NotFoundException($"Transaction with Id {id} not found");
             }
 
-            existingTransaction.Description = transactionDto.Description;
-            existingTransaction.Amount = transactionDto.Amount;
-            existingTransaction.TransactionDate = DateTime.Now;
+            if (transactionDto.Description is not null)
+            {
+                existingTransaction.Description = transactionDto.Description;
+            }
+
+            if (transactionDto.Amount is not null)
+            {
+                existingTransaction.Amount = CurrencyConverter.RoundToCent(transactionDto.Amount.Value);
+            }
+
+            existingTransaction.TransactionDate = DateOnly.FromDateTime(DateTime.Now);
 
             _dbContext.Transactions.Update(existingTransaction);
             await _dbContext.SaveChangesAsync();
 
-            return existingTransaction?.ToDto();
+            return existingTransaction.ToDto();
         }
 
         public async Task DeleteTransactionAsync(Guid id)
