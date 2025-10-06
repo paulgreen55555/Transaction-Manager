@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using System;
 using TransactionManager.Api.Data;
 using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Entities;
@@ -9,6 +8,8 @@ namespace TransactionManager.Tests.TransactionService
 {
     public class TransactionServiceTests
     {
+        private readonly CurrencyRateService _currencyRateService;
+
         private TransactionMangerContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<TransactionMangerContext>()
@@ -22,7 +23,7 @@ namespace TransactionManager.Tests.TransactionService
         public async void AddTransactionAsync_AddsTransaction()
         {
             using var context = CreateDbContext();
-            var service = new Api.Services.TransactionService(context);
+            var service = new Api.Services.TransactionService(context, _currencyRateService);
             var dto = new CreateTransactionDto("Transaction1", 9.50m);
 
             var result = await service.AddTransactionAsync(dto);
@@ -55,7 +56,7 @@ namespace TransactionManager.Tests.TransactionService
             context.Transactions.AddRange(transactions);
             await context.SaveChangesAsync();
 
-            var service = new Api.Services.TransactionService(context);
+            var service = new Api.Services.TransactionService(context, _currencyRateService);
             var result = await service.GetTransactionsAsync();
 
             var resultList = result.ToList();
@@ -80,7 +81,7 @@ namespace TransactionManager.Tests.TransactionService
             context.Transactions.Add(transaction);
             await context.SaveChangesAsync();
 
-            var service = new Api.Services.TransactionService(context);
+            var service = new Api.Services.TransactionService(context, _currencyRateService);
             var result = await service.GetTransactionAsync(transaction.Id);
 
             Assert.NotNull(result);
@@ -104,7 +105,7 @@ namespace TransactionManager.Tests.TransactionService
 
             var dto = new UpdateTransactionDto("Transaction3", 109.50m);
 
-            var service = new Api.Services.TransactionService(context);
+            var service = new Api.Services.TransactionService(context, _currencyRateService);
             var result = await service.UpdateTransactionAsync(transaction.Id, dto);
 
             Assert.NotNull(result);
@@ -127,7 +128,7 @@ namespace TransactionManager.Tests.TransactionService
             context.Transactions.Add(transaction);
             await context.SaveChangesAsync();
 
-            var service = new Api.Services.TransactionService(context);
+            var service = new Api.Services.TransactionService(context, _currencyRateService);
             await service.DeleteTransactionAsync(transaction.Id);
 
             var deleted = await context.Transactions.FindAsync(transaction.Id);

@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient<ICurrencyRateService, CurrencyRateService>();
+
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var connectionString = builder.Configuration.GetConnectionString("TransactionManger");

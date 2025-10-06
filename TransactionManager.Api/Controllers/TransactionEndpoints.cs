@@ -48,6 +48,14 @@ namespace TransactionManager.Api.Controllers
                 return Results.NoContent();
             });
 
+            group.MapGet("/converted/{id}", async (ITransactionService transactionService, Guid id, string currencyCode) =>
+            {
+                var result = await transactionService.GetConvertedTransactionAsync(id, currencyCode);
+
+                return Results.Ok(result);
+            });
+
+
             return group;
         }
     }

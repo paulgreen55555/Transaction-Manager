@@ -11,12 +11,13 @@ namespace TransactionManager.Api.Services
 {
     public class TransactionService : ITransactionService
     {
-
         private readonly TransactionMangerContext _dbContext;
+        private readonly ICurrencyRateService _currencyRateService;
 
-        public TransactionService(TransactionMangerContext dbContext)
+        public TransactionService(TransactionMangerContext dbContext, ICurrencyRateService currencyRateService)
         {
             _dbContext = dbContext;
+            _currencyRateService = currencyRateService;
         }
 
         public async Task<TransactionDto> AddTransactionAsync(CreateTransactionDto transaction)
@@ -88,11 +89,35 @@ namespace TransactionManager.Api.Services
 
             if (existingTransaction == null)
             {
-                throw new KeyNotFoundException($"Transaction with Id {id} not found");
+                throw new NotFoundException($"Transaction with Id {id} not found");
             }
 
             _dbContext.Transactions.Remove(existingTransaction);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<ConvertedTransactionDto?> GetConvertedTransactionAsync(Guid id, string currencyCode)
+        {
+            var transaction = await _dbContext.Transactions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaction == null)
+            {
+                throw new NotFoundException($"Transaction with Id {id} not found");
+            }
+
+            var rate = await _currencyRateService.GetExchangeRateAsync(transaction.TransactionDate, currencyCode);
+
+            return new ConvertedTransactionDto(
+                id,
+                transaction.Description,
+                transaction.TransactionDate,
+                transaction.Amount,
+                currencyCode,
+                rate,
+                CurrencyConverter.RoundToCent(transaction.Amount * rate)
+            );
         }
     }
 }

@@ -8,10 +8,12 @@ namespace TransactionManager.Api.Interfaces
 
         Task<TransactionDto?> GetTransactionAsync(Guid id);
 
-        Task<TransactionDto> AddTransactionAsync(CreateTransactionDto transaction);
+        Task<TransactionDto> AddTransactionAsync(CreateTransactionDto transactionDto);
 
         Task<TransactionDto?> UpdateTransactionAsync(Guid id, UpdateTransactionDto transactionDto);
 
         Task DeleteTransactionAsync(Guid id);
+
+        Task<ConvertedTransactionDto?> GetConvertedTransactionAsync(Guid id, string currencyCode);
     }
 }
