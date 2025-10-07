@@ -22,6 +22,11 @@ namespace TransactionManager.Api.Services
 
         public async Task<TransactionDto> AddTransactionAsync(CreateTransactionDto transaction)
         {
+            if (transaction.Amount < 0.01m)
+            {
+                throw new ArgumentException($"Amount should be more than 0.01 (current value {transaction.Amount})");
+            }
+
             Transaction newTransaction = transaction.ToEntity();
 
             newTransaction.Id = Guid.NewGuid();

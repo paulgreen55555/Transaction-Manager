@@ -52,6 +52,23 @@ namespace TransactionManager.Tests
             Assert.Equal(expectedAmount, result.Amount);
         }
 
+        [Theory]
+        [InlineData(-2)]
+        [InlineData(0)]
+        [InlineData(0.001)]
+        public async void AddTransactionAsync_ThrowArgumentException(decimal amout)
+        {
+            using var context = CreateDbContext();
+            var service = new TransactionService(context, _currencyRateService);
+            var expectedMessage = $"Amount should be more than 0.01 (current value {amout})";
+            var dto = new CreateTransactionDto("Transaction1", amout);
+
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                service.AddTransactionAsync(dto));
+
+            Assert.Contains(expectedMessage, exception.Message);
+        }
+
         [Fact]
         public async Task GetTransactionsAsync_ReturnsListOfTransactions()
         {
