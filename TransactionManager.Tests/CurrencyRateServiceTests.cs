@@ -53,9 +53,8 @@ namespace TransactionManager.Tests
             Assert.Equal(expectedRate, result);
         }
 
-
         [Fact]
-        public async Task GetExchangeRateAsync_ThrowHttpRequestException()
+        public async Task GetExchangeRateAsync_ThrowsHttpRequestException()
         {
             var transactionDate = new DateOnly(2025, 10, 6);
             var currencyCode = "Canada-Dollar";
@@ -86,7 +85,7 @@ namespace TransactionManager.Tests
         }
 
         [Fact]
-        public async Task GetExchangeRateAsync_ThrowNoFoundException()
+        public async Task GetExchangeRateAsync_ThrowsNoFoundException()
         {
             var transactionDate = new DateOnly(2025, 10, 6);
             var currencyCode = "Canada-Dollar";

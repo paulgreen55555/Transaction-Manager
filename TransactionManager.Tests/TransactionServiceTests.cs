@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using TransactionManager.Api.Data;
 using TransactionManager.Api.Dtos;
 using TransactionManager.Api.Entities;
+using TransactionManager.Api.Exceptions;
 using TransactionManager.Api.Services;
 
 namespace TransactionManager.Tests
@@ -31,6 +33,23 @@ namespace TransactionManager.Tests
             Assert.Single(context.Transactions);
             Assert.Equal("Transaction1", result.Description);
             Assert.Equal(9.50m, result.Amount);
+        }
+
+        [Theory]
+        [InlineData(9.555, 9.56)]
+        [InlineData(9.114, 9.11)]
+        [InlineData(9.12345, 9.12)]
+        [InlineData(0.129, 0.13)]
+        [InlineData(9.19, 9.19)]
+        public async void AddTransactionAsync_RoundsToCentsAmount(decimal amout, decimal expectedAmount)
+        {
+            using var context = CreateDbContext();
+            var service = new TransactionService(context, _currencyRateService);
+            var dto = new CreateTransactionDto("Transaction1", amout);
+
+            var result = await service.AddTransactionAsync(dto);
+
+            Assert.Equal(expectedAmount, result.Amount);
         }
 
         [Fact]
@@ -67,6 +86,20 @@ namespace TransactionManager.Tests
         }
 
         [Fact]
+        public async Task GetTransactionsAsync_ReturnsEmptyListOfTransactions()
+        {
+            using var context = CreateDbContext();
+           
+            var service = new TransactionService(context, _currencyRateService);
+            var result = await service.GetTransactionsAsync();
+
+            var resultList = result.ToList();
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public async Task GetTransactionAsync_ReturnsTransaction()
         {
             using var context = CreateDbContext();
@@ -86,6 +119,22 @@ namespace TransactionManager.Tests
 
             Assert.NotNull(result);
             Assert.Equal("Transaction1", result.Description);
+        }
+
+        [Fact]
+        public async Task GetTransactionAsync_ThrowsNotFound()
+        {
+            var id = Guid.NewGuid();
+            var expectedMessage = $"Transaction with Id {id} not found";
+
+            using var context = CreateDbContext();
+
+            var service = new TransactionService(context, _currencyRateService);
+
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+                service.GetTransactionAsync(id));
+
+            Assert.Contains(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -114,6 +163,23 @@ namespace TransactionManager.Tests
         }
 
         [Fact]
+        public async Task UpdateTransactionsAsync_ThrowsNotFound()
+        {
+            var id = Guid.NewGuid();
+            var expectedMessage = $"Transaction with Id {id} not found";
+            UpdateTransactionDto dto = new UpdateTransactionDto("", 0);
+
+            using var context = CreateDbContext();
+
+            var service = new TransactionService(context, _currencyRateService);
+
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+                service.UpdateTransactionAsync(id, dto));
+
+            Assert.Contains(expectedMessage, exception.Message);
+        }
+
+        [Fact]
         public async Task DeleteTransactionsAsync_DeletesTransaction()
         {
             using var context = CreateDbContext();
@@ -133,6 +199,22 @@ namespace TransactionManager.Tests
 
             var deleted = await context.Transactions.FindAsync(transaction.Id);
             Assert.Null(deleted);
+        }
+
+        [Fact]
+        public async Task DeleteTransactionsAsync_ThrowsNotFound()
+        {
+            var id = Guid.NewGuid();
+            var expectedMessage = $"Transaction with Id {id} not found";
+
+            using var context = CreateDbContext();
+
+            var service = new TransactionService(context, _currencyRateService);
+
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+                service.DeleteTransactionAsync(id));
+
+            Assert.Contains(expectedMessage, exception.Message);
         }
     }
 }
