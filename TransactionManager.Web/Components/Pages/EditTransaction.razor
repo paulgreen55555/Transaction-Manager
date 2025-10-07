@@ -1,0 +1,80 @@
+﻿@page "/edittransaction"
+@page "/edittransaction/{id:guid}"
+@rendermode InteractiveServer
+
+@inject NavigationManager NavigationManager 
+@inject TransactionsClient Client
+
+<PageTitle>@title</PageTitle>
+<h3>@title</h3>
+
+@if (transaction is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="@transaction" FormName="EditTransaction" OnValidSubmit="HandleSubmitAsync">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <InputText id="description" @bind-Value="transaction.Description" class="form-control" />
+            <ValidationMessage For="() => transaction.Description" />
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount</label>
+            <InputNumber id="amount" @bind-Value="transaction.Amount" class="form-control" />
+            <ValidationMessage For="() => transaction.Amount" />
+        </div>
+        <button type="submit" class="btn btn-primary">Save Transaction</button>
+        <a role="button" class="btn btn-secondary" href="/transactions">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private string title = string.Empty;
+
+    private AddTransaction? transaction;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var oldtransaction =  await Client.GetTransactionAsync(Id.Value);
+            transaction = new()
+            {
+                Description = oldtransaction.Description,
+                Amount = oldtransaction.Amount,
+            };
+            title = "Change Transaction";
+        }
+        else
+        {
+            transaction = new()
+            {
+                Description = string.Empty,
+                Amount = 0,
+            };
+            title = "New Transaction"; 
+        }
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+
+        if (Id is null)
+        {
+            await Client.AddTransactionAsync(transaction);
+        }
+        else
+        {
+            await Client.UpdateTransactionAsync(transaction, Id.Value);
+        }
+
+        NavigationManager.NavigateTo("/transactions");
+    }
+}
