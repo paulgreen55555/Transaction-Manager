@@ -4,6 +4,6 @@ namespace TransactionManager.Api.Models
 {
     public class CountryCurrencyData
     {
-        public List<CountryCurrency> Data { get; set; }
+        public List<CountryCurrency>? Data { get; set; }
     }
 }
