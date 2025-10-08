@@ -85,7 +85,7 @@ namespace TransactionManager.Tests
         }
 
         [Fact]
-        public async Task GetExchangeRateAsync_ThrowsNoFoundException()
+        public async Task GetExchangeRateAsync_ThrowsNotFoundException()
         {
             var transactionDate = new DateOnly(2025, 10, 6);
             var currencyCode = "Canada-Dollar";
@@ -118,5 +118,79 @@ namespace TransactionManager.Tests
 
             Assert.Contains(expectedMessage, exception.Message);
         }
+
+        [Fact]
+        public async Task GetCurrenciesAsync_ReturnsCurrenciesList()
+        {
+            var expectedCurrenciesList = new List<string>() { "Canada-Dollar", "Mexico-Peso" };
+
+            var responseContent = JsonSerializer.Serialize(new CountryCurrencyData
+            {
+                Data = new List<CountryCurrency>
+                {
+                    new CountryCurrency
+                    {
+                       CountryCurrencyDesc = "Canada-Dollar"
+                    },
+                    new CountryCurrency
+                    {
+                       CountryCurrencyDesc = "Mexico-Peso"
+                    }
+                }
+            });
+
+            var httpHandlerMock = new Mock<HttpMessageHandler>();
+
+            httpHandlerMock.
+                Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                  "SendAsync",
+                  ItExpr.IsAny<HttpRequestMessage>(),
+                  ItExpr.IsAny<CancellationToken>()
+               )
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.OK,
+                   Content = new StringContent(responseContent),
+               });
+
+            var httpClient = new HttpClient(httpHandlerMock.Object);
+
+            var service = new CurrencyRateService(httpClient);
+
+            var result = await service.GetCurrenciesAsync();
+
+            Assert.Equal(expectedCurrenciesList, result);
+        }
+
+        [Fact]
+        public async Task GetCurrenciesAsync_ThrowsHttpRequestException()
+        {
+            var expectedMessage = "Request to currency api failed with status code InternalServerError";
+
+            var httpHandlerMock = new Mock<HttpMessageHandler>();
+
+            httpHandlerMock
+               .Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                  "SendAsync",
+                  ItExpr.IsAny<HttpRequestMessage>(),
+                  ItExpr.IsAny<CancellationToken>()
+               )
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.InternalServerError
+               });
+
+            var httpClient = new HttpClient(httpHandlerMock.Object);
+
+            var service = new CurrencyRateService(httpClient);
+
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+                service.GetCurrenciesAsync());
+
+            Assert.Contains(expectedMessage, exception.Message);
+        }
+
     }
 }

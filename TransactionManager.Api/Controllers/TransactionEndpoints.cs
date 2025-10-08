@@ -55,7 +55,6 @@ namespace TransactionManager.Api.Controllers
                 return Results.Ok(result);
             });
 
-
             return group;
         }
     }

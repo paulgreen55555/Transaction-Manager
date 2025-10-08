@@ -40,5 +40,31 @@ namespace TransactionManager.Api.Services
                     .First()
                     .ExchangeRate;
         }
+
+        public async Task<List<string>> GetCurrenciesAsync()
+        {
+            var url = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange?fields=country_currency_desc&page[size]=265";
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"Request to currency api failed with status code {response.StatusCode}");
+            }
+
+            var currencyData = await response.Content.ReadFromJsonAsync<CountryCurrencyData>();
+
+            if (currencyData is null || currencyData.Data == null)
+            {
+                return new List<string>();
+            }
+
+            var currencyList = currencyData.Data
+                .Select(x => x.CountryCurrencyDesc)
+                .Distinct()
+                .ToList();
+
+            return currencyList;
+        }
     }
 }
