@@ -1,0 +1,87 @@
+﻿@page "/converttransaction/{id:guid}"
+@rendermode InteractiveServer
+
+@inject NavigationManager NavigationManager
+@inject TransactionsClient Client
+
+<PageTitle>Calculate Transaction</PageTitle>
+<h1>Transaction</h1>
+
+@if (transaction is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@transaction.Description</dd>
+
+        <dt class="col-sm-3">Original Amount</dt>
+        <dd class="col-sm-9">@transaction.Amount</dd>
+
+        <dt class="col-sm-3">Transaction Date</dt>
+        <dd class="col-sm-9">@transaction.TransactionDate</dd>
+    </dl>
+
+    <dl class="row border rounded p-3 bg-light mb-3 shadow-sm">
+        <dt class="col-sm-3">Currency code</dt>
+        <dd class="col-sm-9">@convertedTransaction!.CurrencyCode</dd>
+
+        <dt class="col-sm-3">Rate</dt>
+        <dd class="col-sm-9">@convertedTransaction.Rate</dd>
+
+        <dt class="col-sm-3">Converted Amount </dt>
+        <dd class="col-sm-9">@convertedTransaction.ConvertedAmount</dd>
+    </dl>
+
+    <InputSelect class="form-control mb-3" @bind-Value="selectedCurrency">
+        <option value="">-- Select Currency --</option>
+        @foreach (var currency in currencies)
+        {
+            <option value="@currency">@currency</option>
+        }
+    </InputSelect>
+
+    <button type="submit" class="btn btn-primary" onclick="@ConvertAsync">Convert Transaction</button>
+    <a class="btn btn btn-secondary m-2" role="button" href="/transactions">Back to list</a>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private string selectedCurrency = string.Empty;
+
+    private List<string> currencies = new();
+
+    private Transaction? transaction;
+
+    private ConvertedTransaction? convertedTransaction = new ConvertedTransaction();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        transaction = await Client.GetTransactionAsync(Id);
+
+        currencies = await Client.GetCurrencyListAsync();
+    }
+
+    private async Task ConvertAsync()
+    {
+        if (string.IsNullOrEmpty(selectedCurrency))
+        {
+            return;
+        }
+
+        try
+        {
+            convertedTransaction = await Client.GetConvertedTransactionAsync(Id, selectedCurrency);
+        }
+        catch
+        {
+            convertedTransaction!.CurrencyCode = $"No data for {selectedCurrency}";
+            convertedTransaction.Rate = 0;
+            convertedTransaction.ConvertedAmount = 0;
+        }
+    }
+}

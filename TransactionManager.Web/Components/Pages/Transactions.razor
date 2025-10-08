@@ -32,7 +32,7 @@ else
                     <td>@transaction.TransactionDate</td>
                     <td>
                         <div class="d-flex">
-                            <a class="btn btn btn-secondary me-2" role="button" href="@TransactionUrl(transaction.Id)">
+                            <a class="btn btn btn-secondary me-2" role="button" href="@CalculatedTransactionUrl(transaction.Id)">
                                 <i class="bi bi-currency-exchange"></i>
                             </a>
                             <a class="btn btn btn-primary me-2" role="button" href="@TransactionUrl(transaction.Id)">
@@ -68,6 +68,8 @@ else
     }
 
     private static string TransactionUrl(Guid id) => $"/edittransaction/{id}";
+
+    private static string CalculatedTransactionUrl(Guid id) => $"/converttransaction/{id}";
 
     private string GetDeleteModalId(Transaction transaction)
     {

@@ -19,5 +19,12 @@ namespace TransactionManager.Web.Clients
 
         public async Task DeteteTransactionAsync(Guid id) =>
             await httpClient.DeleteAsync($"transactions/{id}");
+
+        public async Task<ConvertedTransaction> GetConvertedTransactionAsync(Guid id, string currencyCode) =>
+            await httpClient.GetFromJsonAsync<ConvertedTransaction>($"transactions/converted/{id}?currencyCode={currencyCode}") ??
+            throw new Exception("Could not find transaction");
+
+        public async Task<List<string>> GetCurrencyListAsync() =>
+            await httpClient.GetFromJsonAsync<List<string>>("currency") ?? new List<string>();
     }
 }
